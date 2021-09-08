@@ -22,6 +22,13 @@ public class HttpServer {
                                                     + "Content-Type: text/html" + "\r\n"
                                                     + "\r\n";
 
+    private static final String CSS_MESSAGE = "HTTP/1.1 200 OK \r\n" 
+                                                    + "Content-Type: text/css" + "\r\n"
+                                                    + "\r\n";
+    private static final String JS_MESSAGE = "HTTP/1.1 200 OK \r\n" 
+                                                    + "Content-Type: text/javascipt" + "\r\n"
+                                                    + "\r\n";
+
     private static final String HTTP_MESSAGE_NOT_FOUND = "HTTP/1.1 404 Not Found\n"
                                                     + "Content-Type: text/html\r\n"
                                                     + "\r\n";
@@ -120,6 +127,10 @@ public class HttpServer {
                 e.printStackTrace();
             }
             return null;
+        }else if(uri.contains("css")){
+            return computeCSSResponse(outStream);
+        }else if(uri.contains("js")){
+            return computeJSResponse(outStream);
         }
         return null;
     }
@@ -134,6 +145,36 @@ public class HttpServer {
 
     public String computeHTMLResponse(OutputStream out){
         String content = HTTP_MESSAGE;
+        File file = new File("src/main/resources/public/index.html");
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            while((line =  br.readLine()) != null) content += line + "\n"; 
+            br.close();
+            out.write(content.getBytes());
+        } catch (IOException e) {
+            System.err.format("FileNotFoundException %s%n", e);
+            default404HTMLResponse(out);
+        }
+        return content;
+    }
+    public String computeJSResponse(OutputStream out){
+        String content = JS_MESSAGE;
+        File file = new File("src/main/resources/public/index.html");
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            while((line =  br.readLine()) != null) content += line + "\n"; 
+            br.close();
+            out.write(content.getBytes());
+        } catch (IOException e) {
+            System.err.format("FileNotFoundException %s%n", e);
+            default404HTMLResponse(out);
+        }
+        return content;
+    }
+    public String computeCSSResponse(OutputStream out){
+        String content = CSS_MESSAGE;
         File file = new File("src/main/resources/public/index.html");
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
