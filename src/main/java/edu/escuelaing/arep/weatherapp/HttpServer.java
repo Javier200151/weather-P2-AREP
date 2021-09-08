@@ -90,7 +90,6 @@ public class HttpServer {
 		try {
 			
 			uriContentType=request.get(0).split(" ")[1];
-
             //URI resource = new URI(uriContentType);
             
             
@@ -110,7 +109,7 @@ public class HttpServer {
         if(uri.contains("clima")){
             //System.out.println(computeHTMLResponse(OutputStream out));
             return computeHTMLResponse(outStream);
-        }else{
+        }else if(uri.contains("consulta")){
             String country = uri.substring(uri.lastIndexOf("=") + 1);
             System.out.println("country "+country);
             try {
@@ -121,6 +120,7 @@ public class HttpServer {
             }
             return null;
         }
+        return null;
     }
     
     public static String computeJSONResponse(String country) throws IOException{
