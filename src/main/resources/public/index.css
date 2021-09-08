@@ -1,0 +1,91 @@
+html, body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: normal;
+    box-sizing: border-box;
+    color: #4d4d4d;
+    background-color: #f2f2f2;
+}
+
+input[type=text] {
+    text-align: center;
+    font-family: Arial;
+    font-size: 15pt;
+    background: transparent;
+    border: none;
+    width: 25%;
+    border-bottom: 2px solid rgb(73, 73, 73);
+}
+
+.main-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.title {
+    margin: 0;
+    text-align: center;
+}
+
+.mdv-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mdv-card {
+    width: 300px;
+    height: 500px;
+    box-shadow: 0px 8px 25px #00000024;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 20px;
+}
+
+.mdv-card__title {
+    margin-bottom: 0;
+    text-align: center;
+    vertical-align: top;
+}
+
+.my-custom-scrollbar {
+    position: relative;
+    height: 500px;
+    overflow: auto;
+    }
+    .table-wrapper-scroll-y {
+    box-shadow: 0px 8px 25px #00000024;
+    display: block;
+    }
+
+#navbar {
+  background-color: #333;
+  position: fixed;
+  top: -50px;
+  width: 100%;
+  display: block;
+  transition: top 0.3s;
+}
+
+#navbar a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 15px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+#navbar a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
