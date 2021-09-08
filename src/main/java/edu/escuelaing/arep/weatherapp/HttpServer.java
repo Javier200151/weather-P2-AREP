@@ -18,22 +18,21 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class HttpServer {
+    private static final String HTTP_MESSAGE = "HTTP/1.1 200 OK \r\n" 
+                                                    + "Content-Type: text/html" + "\r\n"
+                                                    + "\r\n";
     private static final HttpServer _instance = new HttpServer();
-    private static final HashMap<String,String> contentType = new HashMap<String,String>();
+
     public static HttpServer getInstance(){
-        contentType.put("html","text/html");
-        contentType.put("css","text/css");
-		contentType.put("js","text/javascript");
         return _instance;
     }
 
     private HttpServer(){
-        
     }
-    
 
-    public void start() throws IOException{
+    public String start() throws IOException{
         ServerSocket serverSocket = null;
+        String jsonString="VACIOS";
         try {
             serverSocket = new ServerSocket(getPort());
         } catch (IOException e) {
@@ -51,16 +50,17 @@ public class HttpServer {
                 System.exit(1);
             }
             try {
-                serverConnection(clientSocket);
+                jsonString=serverConnection(clientSocket);
             } catch (URISyntaxException e) {
                 System.err.println("URI incorrect.");
                 System.exit(1);
             }
         }
         serverSocket.close();
+        return jsonString;
     }
 
-    public void serverConnection(Socket clientSocket) throws IOException, URISyntaxException {
+    public String serverConnection(Socket clientSocket) throws IOException, URISyntaxException {
         OutputStream outStream=clientSocket.getOutputStream();
 		PrintWriter out = new PrintWriter(outStream, true);
         BufferedReader in = new BufferedReader(
@@ -80,38 +80,40 @@ public class HttpServer {
         }
         System.out.println("request "+request.get(0).split(" ")[1]);
         String uriContentType="";
-		String uri="";
+        String jsonString="VACIO";
 		try {
 			
 			uriContentType=request.get(0).split(" ")[1];
 
-            URI resource = new URI(uriContentType);
+            //URI resource = new URI(uriContentType);
             String country = uriContentType.substring(uriContentType.lastIndexOf("=") + 1);
             System.out.println("country "+country);
-            JSONObject json = readJsonFromUrl("api.openweathermap.org/data/2.5/weather?q="+country+"&appid=d1bcfbab47d918a819df1b59af4eee93");
+            JSONObject json = readJsonFromUrl("https://api.openweathermap.org/data/2.5/weather?q="+country+"&appid=d1bcfbab47d918a819df1b59af4eee93");
+            jsonString=json.toString();
             System.out.println(json.toString());
-            //System.out.println(json.get("id"));
-			
-			uri=resource.getPath().split("/")[1];
         }catch(Exception e){
             System.out.println(e);
         }
-        //outputLine = getResource( uri, outStream);
+        outputLine = getResource( uriContentType, outStream);
         //out.println(outputLine);
         out.close();
         in.close();
         clientSocket.close();
+
+        return jsonString;
     }
     public String getResource( String uri, OutputStream outStream) throws URISyntaxException{
-        return computeContentResponse(uri);
+        if(uri.contains("clima")){
+            System.out.println(computeHTMLResponse());
+            return computeHTMLResponse();
+        }else{
+            return null;
+        }
     }
 
-    public String computeContentResponse(String uriContentType){
-        String extensionUri = uriContentType.substring(uriContentType.lastIndexOf(".") + 1);
-        String content = "HTTP/1.1 200 OK \r\n" 
-                            + "Content-Type: "+ contentType.get(extensionUri) + "\r\n"
-                            + "\r\n";
-        File file = new File("src/main/resources/public/"+uriContentType);
+    public String computeHTMLResponse(){
+        String content = HTTP_MESSAGE;
+        File file = new File("src/main/resources/public/index.html");
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
@@ -156,8 +158,8 @@ public class HttpServer {
         return sb.toString();
       }
     
-      public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
-        InputStream is = new URL(url).openStream();
+      public static JSONObject readJsonFromUrl(String city) throws IOException, JSONException {
+        InputStream is = new URL(city).openStream();
         try {
           BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
           String jsonText = readAll(rd);
@@ -169,5 +171,6 @@ public class HttpServer {
       }
     public static void main(String[] args) throws IOException {
         HttpServer.getInstance().start();
+        System.out.println();
     }
 }
