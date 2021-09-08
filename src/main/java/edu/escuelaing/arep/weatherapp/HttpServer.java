@@ -72,13 +72,14 @@ public class HttpServer {
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(
                         clientSocket.getInputStream()));
-                      
+        System.out.println("in "+in);
         String inputLine, outputLine;
         ArrayList<String> request = new ArrayList<>();
         String sv="";
         
-
+        //System.out.println("in.readLine() "+in.readLine());
         while ((inputLine = in.readLine()) != null) {
+            System.out.println("Response: "+inputLine);
             request.add(inputLine);
             if (!in.ready()) {
                 break;
