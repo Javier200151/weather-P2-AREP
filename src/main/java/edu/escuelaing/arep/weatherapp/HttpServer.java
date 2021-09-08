@@ -21,6 +21,12 @@ public class HttpServer {
     private static final String HTTP_MESSAGE = "HTTP/1.1 200 OK \r\n" 
                                                     + "Content-Type: text/html" + "\r\n"
                                                     + "\r\n";
+
+    private static final String HTTP_MESSAGE_NOT_FOUND = "HTTP/1.1 404 Not Found\n"
+                                                    + "Content-Type: text/html\r\n"
+                                                    + "\r\n";
+    private static final String WHEATER_QUERY = "https://api.openweathermap.org/data/2.5/weather?q=country&appid=d1bcfbab47d918a819df1b59af4eee93";
+
     private static final HttpServer _instance = new HttpServer();
 
     public static HttpServer getInstance(){
@@ -80,17 +86,14 @@ public class HttpServer {
         }
         System.out.println("request "+request.get(0).split(" ")[1]);
         String uriContentType="";
-        String jsonString="VACIO";
+        
 		try {
 			
 			uriContentType=request.get(0).split(" ")[1];
 
             //URI resource = new URI(uriContentType);
-            String country = uriContentType.substring(uriContentType.lastIndexOf("=") + 1);
-            System.out.println("country "+country);
-            JSONObject json = readJsonFromUrl("https://api.openweathermap.org/data/2.5/weather?q="+country+"&appid=d1bcfbab47d918a819df1b59af4eee93");
-            jsonString=json.toString();
-            System.out.println(json.toString());
+            
+            
         }catch(Exception e){
             System.out.println(e);
         }
@@ -100,31 +103,74 @@ public class HttpServer {
         in.close();
         clientSocket.close();
 
-        return jsonString;
+        return outputLine;
     }
     public String getResource( String uri, OutputStream outStream) throws URISyntaxException{
+        
         if(uri.contains("clima")){
-            System.out.println(computeHTMLResponse());
-            return computeHTMLResponse();
+            //System.out.println(computeHTMLResponse(OutputStream out));
+            return computeHTMLResponse(outStream);
         }else{
+            String country = uri.substring(uri.lastIndexOf("=") + 1);
+            System.out.println("country "+country);
+            try {
+                return computeJSONResponse(country);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             return null;
         }
     }
+    
+    public static String computeJSONResponse(String country) throws IOException{
+        String jsonText = HTTP_MESSAGE.replaceFirst("text", "application").replaceFirst("html", "json"); int cp;
+        InputStream is = new URL(WHEATER_QUERY.replaceFirst("country", country)).openStream();
+        BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+        while ((cp = rd.read()) != -1) jsonText += (char) cp;
+        return jsonText;
+    }
 
-    public String computeHTMLResponse(){
+    public String computeHTMLResponse(OutputStream out){
         String content = HTTP_MESSAGE;
         File file = new File("src/main/resources/public/index.html");
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
-            while((line =  br.readLine()) != null) content += line; 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            while((line =  br.readLine()) != null) content += line + "\n"; 
+            br.close();
+            out.write(content.getBytes());
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.format("FileNotFoundException %s%n", e);
+            default404HTMLResponse(out);
         }
         return content;
     }
+    private void default404HTMLResponse(OutputStream out){
+        String outputline = HTTP_MESSAGE_NOT_FOUND;
+        outputline +=     "<!DOCTYPE html>"
+                        + "<html>"
+                        +       "<head>"
+                        +           "<title>404 Not Found</title>\n"
+                        +           "<meta charset=\"UTF-8\">"
+                        +           "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.8\">"
+                        +           "<style type='text/css'>"
+                        +               "h1{"
+                        +                   "font-size: 150px;"
+                        +                   "text-align: center;"
+                        +           "</style>"
+                        +       "</head>"
+                        +       "<body>"
+                        +           "<h1> Error 404 </h1>"
+                        +       "</body>"
+                        + "</html>";
+        try {
+            out.write(outputline.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public String computeDefaultResponse(){
         String outputLine =
@@ -157,6 +203,8 @@ public class HttpServer {
         }
         return sb.toString();
       }
+
+     
     
       public static JSONObject readJsonFromUrl(String city) throws IOException, JSONException {
         InputStream is = new URL(city).openStream();
@@ -171,6 +219,5 @@ public class HttpServer {
       }
     public static void main(String[] args) throws IOException {
         HttpServer.getInstance().start();
-        System.out.println();
     }
 }
